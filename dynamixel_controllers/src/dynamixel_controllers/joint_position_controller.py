@@ -47,12 +47,19 @@ __email__ = 'anton@email.arizona.edu'
 import rospy
 
 from dynamixel_driver.dynamixel_const import *
-from dynamixel_controllers.joint_controller import JointController
+# from dynamixel_controllers.joint_controller import JointController
+from .joint_controller import JointController
 
 from dynamixel_msgs.msg import JointState
 
 class JointPositionController(JointController):
     def __init__(self, dxl_io, controller_namespace, port_namespace):
+        """
+
+        :type dxl_io: dynamixel_driver.dynamixel_io.DynamixelIO
+        :type controller_namespace: str
+        :type port_namespace: str
+        """
         JointController.__init__(self, dxl_io, controller_namespace, port_namespace)
         
         self.motor_id = rospy.get_param(self.controller_namespace + '/motor/id')
@@ -158,6 +165,11 @@ class JointPositionController(JointController):
         raw_torque_val = int(DXL_MAX_TORQUE_TICK * max_torque)
         mcv = (self.motor_id, raw_torque_val)
         self.dxl_io.set_multi_torque_limit([mcv])
+
+    def set_pid(self, P, I, D):
+        self.dxl_io.set_p_gain(self.motor_id, P)
+        self.dxl_io.set_i_gain(self.motor_id, I)
+        self.dxl_io.set_d_gain(self.motor_id, D)
 
     def set_acceleration_raw(self, acc):
         if acc < 0: acc = 0

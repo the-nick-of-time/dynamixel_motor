@@ -53,6 +53,7 @@ from dynamixel_controllers.srv import SetComplianceSlope
 from dynamixel_controllers.srv import SetComplianceMargin
 from dynamixel_controllers.srv import SetCompliancePunch
 from dynamixel_controllers.srv import SetTorqueLimit
+from dynamixel_controllers.srv import SetPID
 
 from std_msgs.msg import Float64
 from dynamixel_msgs.msg import MotorStateList
@@ -60,6 +61,12 @@ from dynamixel_msgs.msg import JointState
 
 class JointController:
     def __init__(self, dxl_io, controller_namespace, port_namespace):
+        """A base class for all joint controllers
+
+        :type port_namespace: str
+        :type controller_namespace: str
+        :type dxl_io: dynamixel_driver.DynamixelIO
+        """
         self.running = False
         self.dxl_io = dxl_io
         self.controller_namespace = controller_namespace
@@ -79,7 +86,7 @@ class JointController:
         self.compliance_marigin_service = rospy.Service(self.controller_namespace + '/set_compliance_margin', SetComplianceMargin, self.process_set_compliance_margin)
         self.compliance_punch_service = rospy.Service(self.controller_namespace + '/set_compliance_punch', SetCompliancePunch, self.process_set_compliance_punch)
         self.torque_limit_service = rospy.Service(self.controller_namespace + '/set_torque_limit', SetTorqueLimit, self.process_set_torque_limit)
-        self.pid_service = rospy.Service(self.controller_namespace + '/set_torque_limit', SetPID, self.process_pid)
+        self.pid_service = rospy.Service(self.controller_namespace + '/set_gains', SetPID, self.process_pid)
 
     def __ensure_limits(self):
         if self.compliance_slope is not None:
@@ -138,9 +145,7 @@ class JointController:
         raise NotImplementedError
 
     def set_pid(self, P, I, D):
-        self.dxl_io.set_p_gain(P)
-        self.dxl_io.set_i_gain(I)
-        self.dxl_io.set_d_gain(D)
+        raise NotImplementedError
 
     def process_set_speed(self, req):
         self.set_speed(req.speed)
